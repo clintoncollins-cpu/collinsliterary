@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.collinsliterary.com/sitemap.xml
+
+# Crawl settings
+Allow: /assets/
+Allow: /index.html
+Allow: /services.html
+Allow: /portfolio.html
+Allow: /about.html
+Allow: /blog.html
+Allow: /contact.html
+Allow: /privacy-policy.html
+
+Disallow: /collins-literary-website/
+Disallow: /private/

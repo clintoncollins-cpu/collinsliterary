@@ -1,0 +1,19 @@
+<svg viewBox="0 0 480 720" xmlns="http://www.w3.org/2000/svg" font-family="Georgia, 'Playfair Display', serif">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d1b3d"/>
+      <stop offset="55%" stop-color="#16337a"/>
+      <stop offset="100%" stop-color="#2b57c9"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="45%" r="35%">
+      <stop offset="0%" stop-color="#ffe9b0" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#ffe9b0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="480" height="720" fill="url(#g)"/>
+  <rect width="480" height="720" fill="url(#glow)"/>
+  <circle cx="240" cy="324" r="46" fill="#ffffff" fill-opacity="0.92"/>
+  <path d="M 226 302 L 226 346 L 262 324 Z" fill="#16337a"/>
+  <text x="240" y="518" text-anchor="middle" fill="#ffffff" font-size="34" font-weight="700" letter-spacing="1">The Last Lantern</text>
+  <text x="240" y="662" text-anchor="middle" fill="#cfd8f5" font-size="15" letter-spacing="3" font-family="Inter, sans-serif">LAUNCH PROMO &#38; CHARACTER REEL</text>
+</svg>
