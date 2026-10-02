@@ -7,8 +7,10 @@ Sitemap: https://www.collinsliterary.com/sitemap.xml
 Allow: /assets/
 Allow: /index.html
 Allow: /services.html
+Allow: /pricing.html
 Allow: /portfolio.html
 Allow: /about.html
+Allow: /team.html
 Allow: /blog.html
 Allow: /contact.html
 Allow: /privacy-policy.html
