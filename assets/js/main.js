@@ -138,7 +138,7 @@
         option.textContent = language[1];
         languageSelect.appendChild(option);
       });
-      languageSelect.value = 'en';
+      languageSelect.value = getPreferredLanguage();
       languageSelect.addEventListener('change', function () {
         try {
           localStorage.setItem('collinsLiteraryLanguage', languageSelect.value);
@@ -147,7 +147,11 @@
         }
         applyGoogleTranslation(languageSelect.value, 20);
       });
-      nav.appendChild(languageSelect);
+      var languageControl = document.createElement('span');
+      languageControl.className = 'language-control';
+      languageControl.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>';
+      languageControl.appendChild(languageSelect);
+      toggle.parentNode.insertBefore(languageControl, toggle);
     }
     function setScrolled() { header.classList.toggle('scrolled', window.scrollY > 12); }
     setScrolled();
@@ -396,6 +400,19 @@
   initContact();
 })();
 
+function getPreferredLanguage() {
+  var languages = Array.isArray(navigator.languages) && navigator.languages.length
+    ? navigator.languages
+    : [navigator.language || ''];
+  var supported = { en: 'en', es: 'es', fr: 'fr', de: 'de', pt: 'pt', it: 'it', ja: 'ja', ar: 'ar', hi: 'hi' };
+  for (var index = 0; index < languages.length; index += 1) {
+    var language = languages[index].toLowerCase().split('-')[0];
+    if (language === 'zh') return 'zh-CN';
+    if (supported[language]) return supported[language];
+  }
+  return 'en';
+}
+
 function applyGoogleTranslation(language, remainingAttempts) {
   if (language === 'en') {
     document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
@@ -437,7 +454,7 @@ window.googleTranslateElementInit = function () {
     } catch (error) {
       savedLanguage = '';
     }
-    languageSelect.value = savedLanguage || (translatedLanguage ? decodeURIComponent(translatedLanguage[1]) : 'en');
+    languageSelect.value = savedLanguage || (translatedLanguage ? decodeURIComponent(translatedLanguage[1]) : getPreferredLanguage());
     languageSelect.disabled = !widget;
     if (widget && languageSelect.value !== 'en') applyGoogleTranslation(languageSelect.value, 20);
   }
