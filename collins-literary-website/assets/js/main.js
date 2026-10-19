@@ -10,6 +10,30 @@
     var toggle = document.querySelector('.menu-toggle');
     var nav = document.getElementById('site-nav');
     if (!header || !toggle || !nav) return;
+    var languageSelect = document.createElement('select');
+    languageSelect.className = 'language-select';
+    languageSelect.setAttribute('aria-label', 'Choose language');
+    languageSelect.disabled = true;
+    [
+      ['en', 'English'], ['es', 'Español'], ['fr', 'Français'], ['de', 'Deutsch'],
+      ['pt', 'Português'], ['it', 'Italiano'], ['zh-CN', '中文 (简体)'], ['ja', '日本語'],
+      ['ar', 'العربية'], ['hi', 'हिन्दी']
+    ].forEach(function (language) {
+      var option = document.createElement('option');
+      option.value = language[0];
+      option.textContent = language[1];
+      languageSelect.appendChild(option);
+    });
+    languageSelect.value = 'en';
+    languageSelect.addEventListener('change', function () {
+      try {
+        localStorage.setItem('collinsLiteraryLanguage', languageSelect.value);
+      } catch (error) {
+        // Translation still works when browser storage is unavailable.
+      }
+      applyGoogleTranslation(languageSelect.value, 20);
+    });
+    nav.appendChild(languageSelect);
     function setScrolled() { header.classList.toggle('scrolled', window.scrollY > 12); }
     setScrolled();
     window.addEventListener('scroll', setScrolled, { passive: true });
@@ -47,6 +71,65 @@
       });
       wrapper.appendChild(menu);
     }
+  }
+
+  function applyGoogleTranslation(language, remainingAttempts) {
+    if (language === 'en') {
+      document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+      window.location.reload();
+      return;
+    }
+    var translateSelect = document.querySelector('.goog-te-combo');
+    if (!translateSelect || translateSelect.options.length < 2) {
+      if (remainingAttempts > 0) window.setTimeout(function () { applyGoogleTranslation(language, remainingAttempts - 1); }, 250);
+      return;
+    }
+    translateSelect.value = language;
+    translateSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function initGoogleTranslate() {
+    var translateElement = document.getElementById('google_translate_element');
+    if (!translateElement) {
+      var wrapper = document.createElement('div');
+      wrapper.className = 'google-translate-wrap';
+      wrapper.setAttribute('aria-hidden', 'true');
+      translateElement = document.createElement('div');
+      translateElement.id = 'google_translate_element';
+      wrapper.appendChild(translateElement);
+      document.body.appendChild(wrapper);
+    }
+
+    window.googleTranslateElementInit = function () {
+      if (!window.google || !window.google.translate || !window.google.translate.TranslateElement) return;
+      new window.google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'es,fr,de,pt,it,zh-CN,ja,ar,hi',
+        autoDisplay: false,
+        layout: window.google.translate.TranslateElement.InlineLayout.NONE,
+        multilanguagePage: true
+      }, 'google_translate_element');
+
+      var translateSelect = document.querySelector('.goog-te-combo');
+      var languageSelect = document.querySelector('.language-select');
+      if (!translateSelect || !languageSelect) return;
+      translateSelect.setAttribute('aria-label', 'Translate page');
+      var savedLanguage = '';
+      try {
+        savedLanguage = localStorage.getItem('collinsLiteraryLanguage') || '';
+      } catch (error) {
+        savedLanguage = '';
+      }
+      var translatedLanguage = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+      languageSelect.value = savedLanguage || (translatedLanguage ? decodeURIComponent(translatedLanguage[1]) : 'en');
+      languageSelect.disabled = false;
+      if (languageSelect.value !== 'en') applyGoogleTranslation(languageSelect.value, 20);
+    };
+
+    var translationScript = document.createElement('script');
+    translationScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    translationScript.async = true;
+    document.head.appendChild(translationScript);
   }
 
   function initSharedUtilities() {
@@ -207,6 +290,7 @@
   }
 
   initHeader();
+  initGoogleTranslate();
   initSharedUtilities();
   initReveal();
   initCounters();

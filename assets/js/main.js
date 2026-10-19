@@ -123,6 +123,32 @@
     var toggle = document.querySelector('.menu-toggle');
     var nav = document.getElementById('site-nav');
     if (!header || !toggle || !nav) return;
+    if (!nav.querySelector('.language-select')) {
+      var languageSelect = document.createElement('select');
+      languageSelect.className = 'language-select';
+      languageSelect.setAttribute('aria-label', 'Choose language');
+      languageSelect.disabled = true;
+      [
+        ['en', 'English'], ['es', 'Español'], ['fr', 'Français'], ['de', 'Deutsch'],
+        ['pt', 'Português'], ['it', 'Italiano'], ['zh-CN', '中文 (简体)'], ['ja', '日本語'],
+        ['ar', 'العربية'], ['hi', 'हिन्दी']
+      ].forEach(function (language) {
+        var option = document.createElement('option');
+        option.value = language[0];
+        option.textContent = language[1];
+        languageSelect.appendChild(option);
+      });
+      languageSelect.value = 'en';
+      languageSelect.addEventListener('change', function () {
+        try {
+          localStorage.setItem('collinsLiteraryLanguage', languageSelect.value);
+        } catch (error) {
+          // Translation still works when browser storage is unavailable.
+        }
+        applyGoogleTranslation(languageSelect.value, 20);
+      });
+      nav.appendChild(languageSelect);
+    }
     function setScrolled() { header.classList.toggle('scrolled', window.scrollY > 12); }
     setScrolled();
     window.addEventListener('scroll', setScrolled, { passive: true });
@@ -370,18 +396,19 @@
   initContact();
 })();
 
-function initTranslationPrompt() {
-  var widget = document.querySelector('.google-translate-wrap');
-  if (!widget) return;
-
-  var language = (navigator.language || navigator.userLanguage || '').toLowerCase();
-  var needsTranslation = !!language && !language.toLowerCase().startsWith('en');
-
-  if (needsTranslation) {
-    widget.classList.add('is-visible');
-  } else {
-    widget.classList.remove('is-visible');
+function applyGoogleTranslation(language, remainingAttempts) {
+  if (language === 'en') {
+    document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+    window.location.reload();
+    return;
   }
+  var translateSelect = document.querySelector('.goog-te-combo');
+  if (!translateSelect || translateSelect.options.length < 2) {
+    if (remainingAttempts > 0) window.setTimeout(function () { applyGoogleTranslation(language, remainingAttempts - 1); }, 250);
+    return;
+  }
+  translateSelect.value = language;
+  translateSelect.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
 window.googleTranslateElementInit = function () {
@@ -390,11 +417,10 @@ window.googleTranslateElementInit = function () {
 
   new window.google.translate.TranslateElement({
     pageLanguage: 'en',
-    autoDisplay: true,
+    includedLanguages: 'es,fr,de,pt,it,zh-CN,ja,ar,hi',
+    autoDisplay: false,
     layout: window.google.translate.TranslateElement.InlineLayout.NONE,
-    multilanguagePage: true,
-    gaTrack: true,
-    gaId: 'UA-XXXXX-Y'
+    multilanguagePage: true
   }, 'google_translate_element');
 
   var widget = document.querySelector('#google_translate_element .goog-te-combo');
@@ -402,8 +428,25 @@ window.googleTranslateElementInit = function () {
     widget.setAttribute('aria-label', 'Translate page');
   }
 
-  initTranslationPrompt();
+  var languageSelect = document.querySelector('.language-select');
+  if (languageSelect) {
+    var translatedLanguage = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+    var savedLanguage = '';
+    try {
+      savedLanguage = localStorage.getItem('collinsLiteraryLanguage') || '';
+    } catch (error) {
+      savedLanguage = '';
+    }
+    languageSelect.value = savedLanguage || (translatedLanguage ? decodeURIComponent(translatedLanguage[1]) : 'en');
+    languageSelect.disabled = !widget;
+    if (widget && languageSelect.value !== 'en') applyGoogleTranslation(languageSelect.value, 20);
+  }
 };
+
+var translationScript = document.createElement('script');
+translationScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+translationScript.async = true;
+document.head.appendChild(translationScript);
 
 (function () {
   var el = document.getElementById("typewriter");
